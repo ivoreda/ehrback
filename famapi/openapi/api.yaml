@@ -1,0 +1,498 @@
+openfamapi: 3.0.0
+info:
+  title: "Famwork project Flask REST famapi"
+  description: "A Project of Famwork"
+  version: "1.0.0"
+servers:
+  - url: ""
+components:
+  schemas:
+    NewUser:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: The first name for the new user
+        lastName:
+          type: string
+          description: The last name for the new user
+        phoneNumber:
+          type: string
+          description: The phone number of  the new user
+        password:
+          type: string
+          description: The password for the new user
+        email:
+          type: string
+          description: The email address for the new user
+        gender:
+          type: string
+          description: The gender the new user
+          enum: [ "Male", "Female" ]
+        accountType:
+          type: string
+          enum: [ "Doctor", "Patient" ]
+      required:
+        - firstName
+        - lastName
+        - phoneNumber
+        - password
+        - email
+        - accountType
+        - gender
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: The email address of the user
+        password:
+          type: string
+          description: The password of the user
+      required:
+        - email
+        - password
+    UpdatePasswordRequest:
+      type: object
+      properties:
+        reset_token:
+          type: string
+          description: The token that was issued to reset the password
+        new_password:
+          type: string
+          description: The new password for the user
+      required:
+        - reset_token
+        - new_password
+    Error:
+      type: object
+      properties:
+        msg:
+          type: string
+      required:
+        - msg
+
+  securitySchemes:
+    jwt_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: famapi.settings.extensions.security_handler
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - "Auth"
+      operationId: "famapi.blueprints.authentication.user_auth.register_user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: A message indicating the registration was successful
+                  data:
+                    type: string
+                    description: The new user data in JSON format
+                required:
+                  - msg
+                  - data
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: A message indicating the error that occurred
+                required:
+                  - message
+  /auth/login:
+    post:
+      summary: Login user
+      tags:
+        - "Auth"
+      operationId: famapi.blueprints.authentication.user_auth.login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: The JWT token for the logged in user
+                  msg:
+                    type: string
+                    description: A message indicating the login was successful
+                required:
+                  - token
+                  - msg
+        '400':
+          description: Invalid Credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: A message indicating the login was unsuccessful
+                required:
+                  - msg
+  /auth/logout:
+    post:
+      summary: Logout user
+      tags:
+        - "Auth"
+      operationId: famapi.blueprints.authentication.user_auth.logout
+      responses:
+        '200':
+          description: User logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+      security:
+        - jwt_auth: [ ]
+  /auth/send_reset_password_link:
+    get:
+      summary: Sends Reset Password link
+      tags:
+        - "Auth"
+      operationId: famapi.blueprints.authentication.user_auth.send_reset_password_link
+      description: Issues a reset token for the given email address
+      parameters:
+        - in: query
+          name: email
+          required: true
+          description: Email of the user
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Email with reset link sent successfully
+        "400":
+          description: Bad request. Email field missing or invalid
+        "500":
+          description: Internal server error
+  /auth/newpassword:
+    put:
+      summary: Reset user password
+      tags:
+        - "Auth"
+      operationId: famapi.blueprints.authentication.user_auth.reset_password
+      requestBody:
+        description: Request body containing the new password and confirm password
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: The new password
+                  minLength: 8
+                  example: "new_password123"
+                confirm_password:
+                  type: string
+                  description: Confirm password
+                  minLength: 8
+                  example: "new_password123"
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+            description: reset email
+          required: true
+        - in: query
+          name: reset_token
+          schema:
+            type: string
+            description: reset email of user
+          required: true
+      responses:
+        "200":
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: Success message
+                    example: "Password Successfully Updated"
+        "400":
+          description: Invalid input parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: Error message
+                    example: "Passwords do not match"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: Error message
+                    example: "Internal server error occurred"
+  /auth/user/update_password:
+    put:
+      summary: Update a user's password in the App
+      tags:
+        - "Auth"
+      operationId: famapi.blueprints.authentication.user_auth.update_password
+      security:
+        - jwt_auth: [ ]
+      requestBody:
+        description: JSON object containing old and new passwords
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                new_password:
+                  type: string
+              required:
+                - old_password
+                - new_password
+      responses:
+        '200':
+          description: Password successfully updated
+  /auth/delete_account:
+    delete:
+      summary: Delete a user account
+      tags:
+        - "User"
+      operationId: famapi.blueprints.authentication.user_auth.delete_account
+      parameters:
+        - in: query
+          name: email
+          required: true
+          description: The email address of the user account to be deleted
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User account deleted successfully
+        "500":
+          description: Error occurred while processing the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: Error message
+                    example: "Internal server error"
+      security:
+        - jwt_auth: [ ]
+  /suspend_account:
+    put:
+      summary: Suspend a user account
+      tags:
+        - "Admin Actions"
+      operationId: famapi.blueprints.authentication.user_auth.suspend_account
+      parameters:
+        - in: query
+          name: email
+          required: true
+          description: The email address of the user account to be suspended
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User account suspended successfully
+        "500":
+          description: Error occurred while processing the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: Error message
+                    example: "Internal server error"
+      security:
+        - jwt_auth: [ ]
+  /deactivate_account:
+    put:
+      summary: Deactivate a user account
+      tags:
+        - "Admin Actions"
+      operationId: famapi.blueprints.authentication.user_auth.deactivate_account
+      parameters:
+        - in: query
+          name: email
+          required: true
+          description: The email address of the user account to be deactivated
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User account deactivated successfully
+        "500":
+          description: Error occurred while processing the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: Error message
+                    example: "Internal server error"
+      security:
+        - jwt_auth: [ ]
+  /activate_account:
+    put:
+      summary: Activate a user account
+      tags:
+        - "Admin Actions"
+      operationId: famapi.blueprints.authentication.user_auth.activate_account
+      parameters:
+        - in: query
+          name: email
+          required: true
+          description: The email address of the user account to be activated
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User account activated successfully
+        "500":
+          description: Error occurred while processing the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    description: Error message
+                    example: "Internal server error"
+      security:
+        - jwt_auth: [ ]
+
+  /auth/user:
+    put:
+      summary: Update user record
+      tags:
+        - "User"
+      operationId: famapi.blueprints.authentication.user_auth.update_user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: User's email address
+                  example: john@example.com
+                firstName:
+                  type: string
+                  description: User's first name
+                  example: John
+                lastName:
+                  type: string
+                  description: User's last name
+                  example: Doe
+                phoneNumber:
+                  type: string
+                  description: User's phone number
+                  example: +234-555-1234
+                country:
+                  type: string
+                  description: User's Country
+                  example: India
+                country_code:
+                  type: string
+                  description: User's country's code
+                  example: +123-4
+                city:
+                  type: string
+                  description: User's city
+                  example: lagos
+                state:
+                  type: string
+                  description: User's state
+                  example: lagos
+                about_me:
+                  type: string
+                  description: User's short bio
+                  example: i fight zombies for a living
+                gender:
+                  type: string
+                  description: User's gender
+                  example: Male
+              required:
+                - email
+      responses:
+        "200":
+          description: User record updated successfully
+        "500":
+          description: Internal server error
+      security:
+        - jwt_auth: [ ]
+    get:
+      summary: Retrieve user record
+      tags:
+        - "User"
+      operationId: famapi.blueprints.authentication.user_auth.get_user
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          description: User's email address
+          example: john@example.com
+          required: true
+      responses:
+        "200":
+          description: User record retrieved successfully
+        "404":
+          description: User not found
+      security:
+        - jwt_auth: [ ]
