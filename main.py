@@ -21,19 +21,9 @@ def create_app():
     CORS(app)
     app.config.from_object(Config)
     jwt.init_app(app)
-    # storage.init_app(app)  # initialize google storage
-    connect(host=os.environ.get('MONGODB_URI'))
+    # connect(host=os.environ.get('MONGODB_URI'))
 
     # add blueprints
-    app.register_blueprint(tracker_usage_bp, url_prefix='/tracker')
     app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(sub_bp)
-    app.register_blueprint(notification_bp, url_prefix='/notifications')
-    app.register_blueprint(payment_bp)
-    app.register_blueprint(book_bp)
-    app.register_blueprint(bookmark_bp)
-    app.register_blueprint(rating_bp)
-    app.register_blueprint(note_bp)
-    app.register_blueprint(assessment_bp)
 
     return app

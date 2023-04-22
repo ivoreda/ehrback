@@ -5,7 +5,7 @@ from flask import Flask
 import os
 
 
-SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://root:410208olA$$$@localhost/todoApp_db"
+SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://root:xyzpasswordhere@localhost/database_name_here"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URI)
 

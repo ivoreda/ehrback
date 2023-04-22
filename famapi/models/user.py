@@ -1,7 +1,15 @@
 import datetime
-from mongoengine import *
+# from mongoengine import *
+from sqlalchemy.orm import relationship
+from sqlalchemy import (
+    DateTime, String, ForeignKey, Column, Enum, MetaData
+)
+from famapi.settings.database import Base, SessionLocal
 from bcrypt import hashpw, gensalt, checkpw
 from bson.binary import Binary
+
+db = SessionLocal()
+metadata = MetaData()
 
 AccountType = (('Doctor', 'Doctor'),
                ('Patient', 'Patient'))
@@ -11,8 +19,8 @@ GenderType = (('Male', 'Male'),
 
 
 # is_authenticated(), is_active(), is_anonymous(), get_id()
-class User(Document):
-    dateCreated = StringField(default=datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S'))
+class User(Base):
+    dateCreated = Column(String(64), default=datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S'))
     lastModified = StringField(default=datetime.datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S'))
     status = IntField(default=0)  # 0:deactivated, 1:activated, 2:suspended, 3:deleted
     firstName = StringField()
@@ -36,7 +44,6 @@ class User(Document):
     state = StringField()
     city = StringField()
     about_me = StringField()
-
 
     def __init__(self, *args, **kwargs):
         """

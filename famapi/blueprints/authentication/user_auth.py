@@ -5,12 +5,10 @@ from flask_api import status
 from famapi.models.user import User
 from flask import current_app
 from famapi.services.email import Email
-
-
+from famapi.settings.extensions import jwt
 from flask_jwt_extended import (current_user, get_jti, jwt_required, get_jwt, unset_jwt_cookies,
                                 unset_access_cookies, unset_refresh_cookies)
 import json
-from datetime import datetime
 from famapi.settings.extensions import jwt
 # from mongoengine import errors
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
@@ -73,8 +71,6 @@ def logout():
     except Exception as e:
         return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR
 
-
-# # change to send_reset_password_link():
 
 @auth_bp.route("/send_reset_password_link", methods=["GET"])
 def send_reset_password_link():
@@ -245,3 +241,9 @@ def activate_account():
         AUTH.activate_account(email)
     except Exception as e:
         return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    return User.objects.get(id=identity)
