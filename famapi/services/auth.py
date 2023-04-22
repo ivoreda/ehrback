@@ -18,6 +18,7 @@ class Auth:
     def __init__(self):
         """ Constructor
         """
+        pass
 
     def register_user(self, data: dict) -> User:
         """ User registration

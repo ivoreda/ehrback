@@ -85,8 +85,8 @@ def send_reset_password_link():
                 serializer = URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
             token = serializer.dumps(email, salt='password-reset')
 
-            # reset_url = f'{request.url}/auth/newpassword?email={email}&reset_token={token}'
-            reset_url = f"{current_app.config['TEST_DEV_EMAIL']}/auth/newpassword?email={email}&reset_token={token}"
+            reset_url = f'{request.url}/auth/newpassword?email={email}&reset_token={token}'
+            # reset_url = f"{current_app.config['TEST_DEV_EMAIL']}/auth/newpassword?email={email}&reset_token={token}"
             new_email = Email(subject="Reset Your Password")
             return new_email.send_email_for_password_reset(recipients=email, data=reset_url)
         except Exception as e:

@@ -28,6 +28,9 @@ class Config:
     JWT_HEADER_NAME = 'Authorization'
     JWT_HEADER_TYPE = 'Bearer'
 
+    # other settings
+    TEST_DEV_EMAIL = ""
+
 
 class TestConfig:
     SECRET_KEY = os.environ.get('SECRET_KEY')
