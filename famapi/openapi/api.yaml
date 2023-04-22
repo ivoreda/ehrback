@@ -94,32 +94,6 @@ paths:
       responses:
         '201':
           description: Registration successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: A message indicating the registration was successful
-                  data:
-                    type: string
-                    description: The new user data in JSON format
-                required:
-                  - msg
-                  - data
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: A message indicating the error that occurred
-                required:
-                  - message
   /auth/login:
     post:
       summary: Login user
@@ -135,34 +109,8 @@ paths:
       responses:
         '200':
           description: User logged in successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    description: The JWT token for the logged in user
-                  msg:
-                    type: string
-                    description: A message indicating the login was successful
-                required:
-                  - token
-                  - msg
-        '400':
-          description: Invalid Credentials
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: A message indicating the login was unsuccessful
-                required:
-                  - msg
   /auth/logout:
-    post:
+    put:
       summary: Logout user
       tags:
         - "Auth"
@@ -170,15 +118,9 @@ paths:
       responses:
         '200':
           description: User logged out successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
       security:
         - jwt_auth: [ ]
+
   /auth/send_reset_password_link:
     get:
       summary: Sends Reset Password link
@@ -240,37 +182,6 @@ paths:
       responses:
         "200":
           description: Password updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: Success message
-                    example: "Password Successfully Updated"
-        "400":
-          description: Invalid input parameters
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: Error message
-                    example: "Passwords do not match"
-        "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: Error message
-                    example: "Internal server error occurred"
   /auth/user/update_password:
     put:
       summary: Update a user's password in the App
@@ -313,17 +224,6 @@ paths:
       responses:
         "200":
           description: User account deleted successfully
-        "500":
-          description: Error occurred while processing the request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: Error message
-                    example: "Internal server error"
       security:
         - jwt_auth: [ ]
   /suspend_account:
@@ -342,17 +242,6 @@ paths:
       responses:
         "200":
           description: User account suspended successfully
-        "500":
-          description: Error occurred while processing the request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: Error message
-                    example: "Internal server error"
       security:
         - jwt_auth: [ ]
   /deactivate_account:
@@ -371,17 +260,6 @@ paths:
       responses:
         "200":
           description: User account deactivated successfully
-        "500":
-          description: Error occurred while processing the request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: Error message
-                    example: "Internal server error"
       security:
         - jwt_auth: [ ]
   /activate_account:
@@ -400,17 +278,6 @@ paths:
       responses:
         "200":
           description: User account activated successfully
-        "500":
-          description: Error occurred while processing the request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-                    description: Error message
-                    example: "Internal server error"
       security:
         - jwt_auth: [ ]
 
@@ -431,15 +298,15 @@ paths:
                   type: string
                   description: User's email address
                   example: john@example.com
-                firstName:
+                first_name:
                   type: string
                   description: User's first name
                   example: John
-                lastName:
+                last_name:
                   type: string
                   description: User's last name
                   example: Doe
-                phoneNumber:
+                phone_number:
                   type: string
                   description: User's phone number
                   example: +234-555-1234

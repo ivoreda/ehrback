@@ -56,7 +56,7 @@ def login():
 
 
 @jwt_required()
-@auth_bp.route("/logout", methods=["GET"])
+@auth_bp.route("/logout", methods=["PUT"])
 def logout():
     """
     Logout the current user
