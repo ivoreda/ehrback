@@ -1,6 +1,6 @@
 from time import time
 from famapi.models.user import User
-# from mongoengine.errors import DoesNotExist
+from sqlalchemy import exc
 from flask_jwt_extended import (
     create_access_token, create_refresh_token
 )
@@ -9,6 +9,9 @@ from flask import current_app
 from flask import jsonify
 from flask_api import status
 from famapi.settings.extensions import jwt
+from famapi.settings.database import SessionLocal
+
+db = SessionLocal()
 
 
 class Auth:
@@ -23,19 +26,25 @@ class Auth:
     def register_user(self, data: dict) -> User:
         """ User registration
         """
+        print("data here", data)
         if data:
             try:
-                user = User.objects.get(email=data.get("email"))
+                user = db.query(User).filter(User.email == data.get("email")).first()
                 if user:
                     raise ValueError(f"User already exists")
-            except DoesNotExist:
+
                 password = data.get("password")
                 data.pop("password")
                 user = User(**data)
                 user.set_password(password)
                 user.status = 1
-                user.save()
+
+                db.add(user)
+                db.commit()
+                db.refresh(user)
                 return user
+            except Exception as e:
+                raise e
 
     def valid_login(self, email: str, password: str):
         """ Login validation
@@ -43,12 +52,11 @@ class Auth:
         if not email or not password:
             return jsonify(msg="Email and password are required."), status.HTTP_400_BAD_REQUEST
         try:
-            user = User.objects.get(email=email)
-        except DoesNotExist as err:
+            user = db.query(User).filter(User.email == email).first()
+        except exc.NoResultFound as err:
             return jsonify(msg="User with email doesn't exist."), \
                 status.HTTP_400_BAD_REQUEST
 
-        # checks if user is not deactivated
         if user.status == 0:
             return jsonify(msg="This account is deactivated."), status.HTTP_400_BAD_REQUEST
 
@@ -59,7 +67,9 @@ class Auth:
         try:
             access_token = create_access_token(identity=str(user.id))
             user.authenticated = True
-            user.save()
+
+            db.add(user)
+            db.commit()
             response = jsonify(msg="logged in successfully", data=access_token)
             return response
         except Exception as err:
@@ -70,7 +80,7 @@ class Auth:
         """ Get reset password token
         """
         try:
-            user = User.objects.get(email=email)
+            user = db.query(User).filter(User.email == email).first()
 
             if user:
                 jwt.encode_key_loader()
@@ -79,38 +89,45 @@ class Auth:
                     current_app.config['SECRET_KEY'], algorithm='HS256'
                 )
                 return token
-        except DoesNotExist as e:
+        except exc.NoResultFound as e:
             return jsonify(msg=str(e)), status.HTTP_404_NOT_FOUND
 
     def suspend_account(self, email: str) -> None:
         """ Suspend a user account """
         try:
-            user = User.objects.get(email=email)
-            user.update(set__status=2)
+            user = db.query(User).filter(User.email == email).first()
+            user.status = 2
             user.authenticated = False
-        except DoesNotExist:
+            db.add(user)
+            db.commit()
+        except exc.NoResultFound:
             pass
 
     def delete_account(self, email: str) -> None:
         """ Delete a user account """
         try:
-            user = User.objects.get(email=email)
-            user.delete()
-        except DoesNotExist:
+            user = db.query(User).filter(User.email == email).first()
+            db.delete(user)
+            db.commit()
+        except exc.NoResultFound:
             pass
 
     def deactivate_account(self, email: str) -> None:
         """ Deactivate a user account """
         try:
-            user = User.objects.get(email=email)
-            user.update(set__status=0)
-        except DoesNotExist:
+            user = db.query(User).filter(User.email == email).first()
+            user.status = 0
+            db.add(user)
+            db.commit()
+        except exc.NoResultFound:
             pass
 
     def activate_account(self, email: str) -> None:
         """ Activate a user account """
         try:
-            user = User.objects.get(email=email)
-            user.update(set__status=1)
-        except DoesNotExist:
+            user = db.query(User).filter(User.email == email).first()
+            user.status = 1
+            db.add(user)
+            db.commit()
+        except exc.NoResultFound:
             return None

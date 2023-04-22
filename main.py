@@ -14,7 +14,7 @@ def create_app():
                'strict_validation': True,
                'validate_responses': True}
 
-    connexion_app = connexion.FlaskApp(__name__, specification_dir="api/openapi", options=options)
+    connexion_app = connexion.FlaskApp(__name__, specification_dir="famapi/openapi", options=options)
 
     connexion_app.add_api("api.yaml")
     app = connexion_app.app

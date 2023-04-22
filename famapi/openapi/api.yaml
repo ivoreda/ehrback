@@ -1,4 +1,4 @@
-openfamapi: 3.0.0
+openapi: 3.0.0
 info:
   title: "Famwork project Flask REST famapi"
   description: "A Project of Famwork"
@@ -10,13 +10,13 @@ components:
     NewUser:
       type: object
       properties:
-        firstName:
+        first_name:
           type: string
           description: The first name for the new user
-        lastName:
+        last_name:
           type: string
           description: The last name for the new user
-        phoneNumber:
+        phone_number:
           type: string
           description: The phone number of  the new user
         password:
@@ -29,16 +29,16 @@ components:
           type: string
           description: The gender the new user
           enum: [ "Male", "Female" ]
-        accountType:
+        account_type:
           type: string
           enum: [ "Doctor", "Patient" ]
       required:
-        - firstName
-        - lastName
-        - phoneNumber
+        - first_name
+        - last_name
+        - phone_number
         - password
         - email
-        - accountType
+        - account_type
         - gender
     LoginRequest:
       type: object
