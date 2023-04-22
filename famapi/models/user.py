@@ -62,6 +62,7 @@ class User(Base):
 
     def to_json(self):
         json_data = {
+            'id': self.id,
             'dateCreated': self.date_created,
             'lastModified': self.last_modified,
             'status': self.status,

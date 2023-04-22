@@ -142,7 +142,6 @@ def get_user():
         user = db.query(User).filter(User.email == email).first()
         response_data = json.loads(user.to_json())
 
-        del response_data["password"]
         return jsonify(data=response_data), status.HTTP_200_OK
     except exc.NoResultFound:
         return jsonify(error="User does not exist"), status.HTTP_400_BAD_REQUEST
@@ -164,9 +163,9 @@ def update_user():
         email = data.get("email")
         user_account = db.query(User).filter(User.email == email).first()
 
-        user_account.firstName = data.get("firstName")
-        user_account.lastName = data.get("lastName")
-        user_account.phoneNumber = data.get("phoneNumber")
+        user_account.firstName = data.get("first_name")
+        user_account.lastName = data.get("last_name")
+        user_account.phoneNumber = data.get("phone_number")
         user_account.gender = data.get("gender")
         user_account.country = data.get("country")
         user_account.country_code = data.get("country_code")
@@ -177,8 +176,6 @@ def update_user():
         db.commit()
 
         response_data = json.loads(user_account.to_json())
-
-        del response_data["password"]
 
         return jsonify(data=response_data,
                        msg="Account has been updated successfully"), \
