@@ -4,9 +4,10 @@ blueprints/sub_features/__pycache__/
 blueprints/subscription/__pycache__/
 models/__pycache__/
 __pycache__/*
-api/.env
+famapi/.env
 ../venv
-venv
+api_venv
 how.txt
 test.py
 emtest.txt
+.env

@@ -5,13 +5,16 @@ from flask_api import status
 from famapi.models.user import User
 from flask import current_app
 from famapi.services.email import Email
-from famapi.settings.extensions import jwt
 from flask_jwt_extended import (current_user, get_jti, jwt_required, get_jwt, unset_jwt_cookies,
                                 unset_access_cookies, unset_refresh_cookies)
 import json
 from famapi.settings.extensions import jwt
-# from mongoengine import errors
+from sqlalchemy import exc
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from famapi.settings.database import SessionLocal
+
+db = SessionLocal()
+
 
 AUTH = Auth()
 
@@ -19,7 +22,7 @@ auth_bp = Blueprint('user_auth', __name__)
 
 
 @auth_bp.route('/register', methods=["POST"])
-def register_user() -> Union[str, tuple]:  #
+def register_user() -> Union[str, tuple]:
     """ Registers a new user
     : request_body: contains json formatted data:
         firstName, lastName, phoneNumber, email, password, accountType
@@ -29,14 +32,15 @@ def register_user() -> Union[str, tuple]:  #
     data = request.get_json()
     try:
         new_user = AUTH.register_user(data)
+        print("new user here", new_user)
         if new_user:
-            new_user.save()
             response_data = json.loads(new_user.to_json())
-            del response_data["password"]
+            print("response_data", response_data)
             return jsonify(msg="Registration successful", data=response_data), status.HTTP_201_CREATED
 
     except Exception as e:
-        return jsonify(msg=str(e)), status.HTTP_400_BAD_REQUEST
+        raise e
+        # return jsonify(msg=str(e)), status.HTTP_400_BAD_REQUEST
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -62,7 +66,8 @@ def logout():
 
         user.authenticated = False
         user.isLoggedIn = False
-        user.save()
+        db.add(user)
+        db.commit()
 
         response = jsonify(msg="logged out successfully")
         unset_jwt_cookies(response)
@@ -85,8 +90,7 @@ def send_reset_password_link():
                 serializer = URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
             token = serializer.dumps(email, salt='password-reset')
 
-            # reset_url = f'{request.url}/auth/newpassword?email={email}&reset_token={token}'
-            reset_url = f"{current_app.config['TEST_DEV_EMAIL']}/auth/newpassword?email={email}&reset_token={token}"
+            reset_url = f'{request.url}/auth/newpassword?email={email}&reset_token={token}'
             new_email = Email(subject="Reset Your Password")
             return new_email.send_email_for_password_reset(recipients=email, data=reset_url)
         except Exception as e:
@@ -110,11 +114,12 @@ def reset_password():
             serializer = URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
         email = serializer.loads(reset_token, salt='password-reset', max_age=3600)
         if reset_token and password and confirm_password:
-            user = User.objects.get(email=email)
+            user = db.query(User).filter(User.email == email).first()
             if user:
                 if password == confirm_password:
                     user.set_password(password)
-                    user.save()
+                    db.add(user)
+                    db.commit()
                     return jsonify(msg="Password Successfully Updated"), status.HTTP_200_OK
                 else:
                     return jsonify(msg="Passwords do not match"), status.HTTP_400_BAD_REQUEST
@@ -134,13 +139,13 @@ def get_user():
     try:
         data = request.args
         email = data.get("email")
-        user = User.objects.get(email=email)
+        user = db.query(User).filter(User.email == email).first()
         response_data = json.loads(user.to_json())
 
         del response_data["password"]
         return jsonify(data=response_data), status.HTTP_200_OK
-    # except errors.DoesNotExist:
-    #     return jsonify(error="User does not exist"), status.HTTP_400_BAD_REQUEST
+    except exc.NoResultFound:
+        return jsonify(error="User does not exist"), status.HTTP_400_BAD_REQUEST
     except Exception as e:
         return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -157,7 +162,7 @@ def update_user():
     try:
         data = request.get_json()
         email = data.get("email")
-        user_account = User.objects.get(email=email)
+        user_account = db.query(User).filter(User.email == email).first()
 
         user_account.firstName = data.get("firstName")
         user_account.lastName = data.get("lastName")
@@ -168,7 +173,8 @@ def update_user():
         user_account.state = data.get("state")
         user_account.about_me = data.get("about_me")
         user_account.city = data.get("city")
-        user_account.save()
+        db.add(user_account)
+        db.commit()
 
         response_data = json.loads(user_account.to_json())
 
@@ -195,9 +201,11 @@ def update_password():
         old_password = data.get("old_password")
         new_password = data["new_password"]
 
-        user = User.objects.filter(id=current_user.id).first()
+        user = db.query(User).filter(User.id == current_user.id).first()
         if user.verify_password(old_password):
             user.set_password(new_password)
+            db.add(user)
+            db.commit()
             return jsonify(msg="Password successfully updated"), status.HTTP_200_OK
     except Exception as e:
         return jsonify(error=str(e)), status.HTTP_400_BAD_REQUEST
