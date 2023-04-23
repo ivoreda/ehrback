@@ -40,12 +40,25 @@ def create_message():
 
 
 @jwt_required()
-@messages_bp.route('/appointments/user', methods=["GET"])
-def get_user_messages():
+@messages_bp.route('/appointments/sender', methods=["GET"])
+def get_user_sent_messages():
     try:
         user = db.query(User).filter(User.id == current_user.id).first()
         if user:
-            messages = db.query(Message).filter(Message.sender_type == user.account_type).all()
+            messages = db.query(Message).filter(Message.sender_id == current_user.id).all()
+
+            data = [json.loads(message.to_json()) for message in messages]
+            return jsonify(messages=data), status.HTTP_200_OK
+    except Exception as e:
+        return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR
+
+@jwt_required()
+@messages_bp.route('/appointments/receiver', methods=["GET"])
+def get_user_received_messages():
+    try:
+        user = db.query(User).filter(User.id == current_user.id).first()
+        if user:
+            messages = db.query(Message).filter(Message.receiver_id == current_user.id).all()
 
             data = [json.loads(message.to_json()) for message in messages]
             return jsonify(messages=data), status.HTTP_200_OK
@@ -54,10 +67,20 @@ def get_user_messages():
 
 
 @jwt_required()
-@messages_bp.route('/appointments', methods=["GET"])
-def get_all_messages():
+@messages_bp.route('/messages/sent', methods=["GET"])
+def get_all_sent_messages():
     try:
-        messages = db.query(Message).all()
+        messages = db.query(Message).filter(Message.sender_id.isnot(None)).all()
+        data = [json.loads(message.to_json()) for message in messages]
+        return jsonify(messages=data), status.HTTP_200_OK
+    except Exception as e:
+        return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR
+
+@jwt_required()
+@messages_bp.route('/messages/received', methods=["GET"])
+def get_all_received_messages():
+    try:
+        messages = db.query(Message).filter(Message.receiver_id.isnot(None)).all()
         data = [json.loads(message.to_json()) for message in messages]
         return jsonify(messages=data), status.HTTP_200_OK
     except Exception as e:
@@ -96,4 +119,3 @@ def get_message_by_id(message_id):
         return jsonify(message=json.loads(message.to_json())), status.HTTP_200_OK
     except Exception as e:
         return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR
-

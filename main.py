@@ -6,8 +6,6 @@ from famapi.blueprints.appointment.bookings import bookings_bp
 from famapi.blueprints.health_record.records import records_bp
 from famapi.blueprints.messaging.message import messages_bp
 from flask_cors import CORS
-from mongoengine import connect
-import os
 
 
 def create_app():
@@ -23,7 +21,6 @@ def create_app():
     CORS(app)
     app.config.from_object(Config)
     jwt.init_app(app)
-
 
     # add blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')

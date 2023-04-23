@@ -1,7 +1,5 @@
-services/_pycache__/*
-services/helpers/__pycache__/*
-blueprints/sub_features/__pycache__/
-blueprints/subscription/__pycache__/
+
+
 models/__pycache__/
 __pycache__/*
 famapi/.env
