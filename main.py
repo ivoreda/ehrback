@@ -8,7 +8,6 @@ from famapi.blueprints.messaging.message import messages_bp
 from flask_cors import CORS
 
 
-
 def create_app():
     options = {'swagger_ui': True,
                'swagger_url': '/ui',
@@ -22,7 +21,6 @@ def create_app():
     CORS(app)
     app.config.from_object(Config)
     jwt.init_app(app)
-
 
     # add blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
