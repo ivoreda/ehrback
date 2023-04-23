@@ -459,8 +459,12 @@ paths:
                 message_content:
                   type: string
                   description: The content of the message
+                receiver_id:
+                  type: string
+                  description: The id of the receiver
               required:
                 - message_content
+                - receiver_id
       responses:
         '200':
           description: Message created successfully

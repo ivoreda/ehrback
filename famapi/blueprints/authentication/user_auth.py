@@ -13,9 +13,7 @@ from sqlalchemy import exc
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from famapi.settings.database import SessionLocal
 
-
 db = SessionLocal()
-
 
 AUTH = Auth()
 
@@ -87,14 +85,10 @@ def send_reset_password_link():
         try:
             with current_app.app_context():
                 serializer = URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
-                csrf_serializer = URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
             token = serializer.dumps(email, salt='password-reset')
-            csrf_token = csrf_serializer.dumps(email, salt='csrf-token')
-
             reset_url = f'{request.url}/auth/newpassword?email={email}&reset_token={token}'
             new_email = Email(subject="Reset Your Password")
-            # csrf_token = generate_csrf()
-            return new_email.send_email_for_password_reset(recipients=email, data=reset_url, csrf_token=csrf_token)
+            return new_email.send_email_for_password_reset(recipients=email, data=reset_url)
         except Exception as e:
             return jsonify(msg=str(e)), status.HTTP_400_BAD_REQUEST
     return jsonify(msg="Email field missing")
@@ -206,6 +200,7 @@ def update_password():
             db.add(user)
             db.commit()
             return jsonify(msg="Password successfully updated"), status.HTTP_200_OK
+        return jsonify(error="Incorrect password details"), status.HTTP_400_BAD_REQUEST
     except Exception as e:
         return jsonify(error=str(e)), status.HTTP_400_BAD_REQUEST
 
@@ -253,4 +248,6 @@ def activate_account():
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
-    return User.objects.get(id=identity)
+    print("identity here", identity)
+    return db.query(User).filter(User.id == identity).first()
+    # return User.objects.get(id=identity)

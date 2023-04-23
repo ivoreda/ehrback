@@ -26,9 +26,9 @@ class Message(Base):
         json_data = {
             'id': self.id,
             'sender_id': self.sender_id,
-            'doctor_id': self.doctor_id,
+            'doctor_id': self.receiver_id,
             'message_content': self.message_content,
             'sender_type': self.sender_type,
-            'created_at': self.created_at
+            'created_at': self.created_at.isoformat()
         }
         return json.dumps(json_data)

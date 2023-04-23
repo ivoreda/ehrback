@@ -17,7 +17,7 @@ messages_bp = Blueprint('message', __name__)
 def create_message():
     """ Registers a new user
     : request_body: contains json formatted data:
-        message_content
+        message_content, receiver_id
     :return:
     """
 
@@ -36,6 +36,7 @@ def create_message():
         return jsonify(msg="Please Ensure you are logged in", error="User record doesnt exist"), \
             status.HTTP_400_BAD_REQUEST
     except Exception as e:
+        db.rollback()
         return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
@@ -103,10 +104,12 @@ def get_all_received_messages():
 @messages_bp.route('/messages/<message_id>', methods=["DELETE"])
 def delete_message_by_id(message_id):
     try:
-        message = db.query(Message).filter(Message.id == message_id)
-        db.delete(message)
-        db.commit()
-        return jsonify(msg='Message has been successfully deleted'), status.HTTP_200_OK
+        message = db.query(Message).filter(Message.id == message_id).first()
+        if message:
+            db.delete(message)
+            db.commit()
+            return jsonify(msg='Message has been successfully deleted'), status.HTTP_200_OK
+        return jsonify(error=f"No message record for message id {message_id}"), status.HTTP_400_BAD_REQUEST
 
     except Exception as e:
         return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -115,7 +118,9 @@ def delete_message_by_id(message_id):
 @messages_bp.route('/messages/<message_id>', methods=["GET"])
 def get_message_by_id(message_id):
     try:
-        message = db.query(Message).filter(Message.id == message_id)
-        return jsonify(message=json.loads(message.to_json())), status.HTTP_200_OK
+        message = db.query(Message).filter(Message.id == message_id).first()
+        if message:
+            return jsonify(message=json.loads(message.to_json())), status.HTTP_200_OK
+        return jsonify(error=f"No message record for message id {message_id}"), status.HTTP_400_BAD_REQUEST
     except Exception as e:
         return jsonify(msg=str(e)), status.HTTP_500_INTERNAL_SERVER_ERROR

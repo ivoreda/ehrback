@@ -46,8 +46,8 @@ class Email:
         except Exception as e:
             return jsonify(msg=str(e))
 
-    def send_email_for_password_reset(self, recipients, data, csrf_token):
-        msg = Message("Famwork Learning Password Reset Link", sender="noreply@ctrlearn.com", recipients=[recipients])
+    def send_email_for_password_reset(self, recipients, data):
+        msg = Message("Famwork Password Reset Link", sender="noreply@ctrlearn.com", recipients=[recipients])
         msg.html = '''
                        <div style="width:400px;">
                            <div style="background-color:#30628c;padding:20px;color:#fff;text-align:center;">
@@ -58,11 +58,9 @@ class Email:
                              <p>{}</p>
                              <h3 style="margin-bottom:-10px;font-size:16px">Reset_url</h3>
                              <p>{}</p>
-                             <h3 style="margin-bottom:-10px;font-size:16px">CSRF Token</h3>
-                             <p>{}</p>
                            </div>
                        </div>
-                       '''.format(self.date_created, data, csrf_token)
+                       '''.format(self.date_created, data)
         msg.body = f'Click the following link to reset your password: {data}'
         try:
             self.mail.connect()
