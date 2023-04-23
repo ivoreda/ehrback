@@ -1,5 +1,4 @@
 
-
 models/__pycache__/
 __pycache__/*
 famapi/.env
@@ -9,3 +8,4 @@ how.txt
 test.py
 emtest.txt
 .env
+new_famapi/

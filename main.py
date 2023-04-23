@@ -1,6 +1,6 @@
 import connexion
 from famapi.settings.config import Config, TestConfig
-from famapi.settings.extensions import jwt, storage
+from famapi.settings.extensions import jwt
 from famapi.blueprints.authentication.user_auth import auth_bp
 from famapi.blueprints.appointment.bookings import bookings_bp
 from famapi.blueprints.health_record.records import records_bp
