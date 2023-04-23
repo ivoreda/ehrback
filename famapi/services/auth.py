@@ -26,7 +26,6 @@ class Auth:
     def register_user(self, data: dict) -> User:
         """ User registration
         """
-        print("data here", data)
         if data:
             try:
                 user = db.query(User).filter(User.email == data.get("email")).first()

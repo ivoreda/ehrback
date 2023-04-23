@@ -13,6 +13,7 @@ from sqlalchemy import exc
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from famapi.settings.database import SessionLocal
 
+
 db = SessionLocal()
 
 
@@ -32,10 +33,8 @@ def register_user() -> Union[str, tuple]:
     data = request.get_json()
     try:
         new_user = AUTH.register_user(data)
-        print("new user here", new_user)
         if new_user:
             response_data = json.loads(new_user.to_json())
-            print("response_data", response_data)
             return jsonify(msg="Registration successful", data=response_data), status.HTTP_201_CREATED
 
     except Exception as e:
@@ -88,11 +87,14 @@ def send_reset_password_link():
         try:
             with current_app.app_context():
                 serializer = URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
+                csrf_serializer = URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
             token = serializer.dumps(email, salt='password-reset')
+            csrf_token = csrf_serializer.dumps(email, salt='csrf-token')
 
             reset_url = f'{request.url}/auth/newpassword?email={email}&reset_token={token}'
             new_email = Email(subject="Reset Your Password")
-            return new_email.send_email_for_password_reset(recipients=email, data=reset_url)
+            # csrf_token = generate_csrf()
+            return new_email.send_email_for_password_reset(recipients=email, data=reset_url, csrf_token=csrf_token)
         except Exception as e:
             return jsonify(msg=str(e)), status.HTTP_400_BAD_REQUEST
     return jsonify(msg="Email field missing")

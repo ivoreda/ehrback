@@ -14,7 +14,7 @@ import logging
 
 class Email:
     def __init__(self, subject="Famwork Electronic Record",
-                 sender="noreply@famEHR.com"):
+                 sender="sdtmonitor@gmail.com"):
 
         self.subject = subject
         self.sender = sender
@@ -46,21 +46,23 @@ class Email:
         except Exception as e:
             return jsonify(msg=str(e))
 
-    def send_email_for_password_reset(self, recipients, data):
-        msg = Message("Mecury Learning Password Reset Link", sender="noreply@ctrlearn.com", recipients=[recipients])
+    def send_email_for_password_reset(self, recipients, data, csrf_token):
+        msg = Message("Famwork Learning Password Reset Link", sender="noreply@ctrlearn.com", recipients=[recipients])
         msg.html = '''
-                    <div style="width:400px;">
-                        <div style="background-color:#30628c;padding:20px;color:#fff;text-align:center;">
-                            <h2>Reset Password</h2>
-                        </div>
-                        <div  style="padding:20px;">
-                          <h3 style="margin-bottom:-10px; font-size:16px">Date Created</h3>
-                          <p>{}</p>
-                          <h3 style="margin-bottom:-10px;font-size:16px">Reset_url</h3>
-                          <p>{}</p>
-                        </div>
-                    </div>
-                    '''.format(self.date_created, data)
+                       <div style="width:400px;">
+                           <div style="background-color:#30628c;padding:20px;color:#fff;text-align:center;">
+                               <h2>Reset Password</h2>
+                           </div>
+                           <div  style="padding:20px;">
+                             <h3 style="margin-bottom:-10px; font-size:16px">Date Created</h3>
+                             <p>{}</p>
+                             <h3 style="margin-bottom:-10px;font-size:16px">Reset_url</h3>
+                             <p>{}</p>
+                             <h3 style="margin-bottom:-10px;font-size:16px">CSRF Token</h3>
+                             <p>{}</p>
+                           </div>
+                       </div>
+                       '''.format(self.date_created, data, csrf_token)
         msg.body = f'Click the following link to reset your password: {data}'
         try:
             self.mail.connect()
