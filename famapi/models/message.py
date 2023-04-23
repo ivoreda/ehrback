@@ -17,6 +17,7 @@ class Message(Base):
     __tablename__ = 'message'
     id = Column(Integer, primary_key=True)
     sender_id = Column(Integer, ForeignKey("user.id"))
+    receiver_id = Column(Integer, ForeignKey("user.id"))
     message_content = Column(VARCHAR(255))
     sender_type = Column(VARCHAR(20), Enum(*[a[0] for a in SENDER], name='sender_enum'))
     created_at = Column(DateTime, default=datetime.datetime.now())

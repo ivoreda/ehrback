@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: "Famwork project Flask REST famapi"
+  title: "Famwork project API"
   description: "A Project of Famwork"
   version: "1.0.0"
 servers:
@@ -363,6 +363,7 @@ paths:
           description: User not found
       security:
         - jwt_auth: [ ]
+
   /health_records:
     post:
       summary: Create a new health record
@@ -443,7 +444,7 @@ paths:
 
   /messages:
     post:
-      summary: Create a new message
+      summary: Send a new message
       tags:
         - "Message Chat"
       operationId: famapi.blueprints.messaging.message.create_message
@@ -463,22 +464,45 @@ paths:
       responses:
         '200':
           description: Message created successfully
+  /messages/sent:
     get:
-      summary: Get all messages
+      summary: Get all sent messages
       tags:
         - "Message Chat"
-      operationId: famapi.blueprints.messaging.message.get_all_messages
+      operationId: famapi.blueprints.messaging.message.get_all_sent_messages
       security:
         - jwt_auth: [ ]
       responses:
         '200':
           description: List of messages
-  /messages/user:
+  /messages/received:
     get:
-      summary: Get messages of the logged-in user
+      summary: Get all received messages
       tags:
         - "Message Chat"
-      operationId: famapi.blueprints.messaging.message.get_user_messages
+      operationId: famapi.blueprints.messaging.message.get_all_received_messages
+      security:
+        - jwt_auth: [ ]
+      responses:
+        '200':
+          description: List of messages
+  /messages/sender:
+    get:
+      summary: Get a user's sent messages
+      tags:
+        - "Message Chat"
+      operationId: famapi.blueprints.messaging.message.get_user_sent_messages
+      security:
+        - jwt_auth: [ ]
+      responses:
+        '200':
+          description: List of messages of the logged-in user
+  /messages/receiver:
+    get:
+      summary: Get a user's received messages
+      tags:
+        - "Message Chat"
+      operationId: famapi.blueprints.messaging.message.get_user_received_messages
       security:
         - jwt_auth: [ ]
       responses:
