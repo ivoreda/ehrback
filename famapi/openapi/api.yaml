@@ -363,3 +363,258 @@ paths:
           description: User not found
       security:
         - jwt_auth: [ ]
+  /health_records:
+    post:
+      summary: Create a new health record
+      tags:
+        - "Health Record"
+      operationId: famapi.blueprints.health_record.records.create_record
+      security:
+        - jwt_auth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_id:
+                  type: string
+                doctor_id:
+                  type: string
+                appointment_id:
+                  type: string
+                description:
+                  type: string
+              required:
+                - patient_id
+                - doctor_id
+                - appointment_id
+                - description
+      responses:
+        '200':
+          description: OK
+    get:
+      summary: Get all health records
+      tags:
+        - "Health Record"
+      operationId: famapi.blueprints.health_record.records.get_all_records
+      security:
+        - jwt_auth: [ ]
+      responses:
+        '200':
+          description: OK
+  /health_records/{patient_id}:
+    get:
+      summary: Get all health records for a patient
+      tags:
+        - "Health Record"
+      operationId: famapi.blueprints.health_record.records.get_patient_records
+      security:
+        - jwt_auth: [ ]
+      parameters:
+        - in: path
+          name: patient_id
+          schema:
+            type: string
+          required: true
+          description: The ID of the patient
+      responses:
+        '200':
+          description: OK
+  /health_records/{doctor_id}:
+    get:
+      summary: Get all health records for a doctor
+      tags:
+        - "Health Record"
+      operationId: famapi.blueprints.health_record.records.get_dr_records
+      security:
+        - jwt_auth: [ ]
+      parameters:
+        - in: path
+          name: doctor_id
+          schema:
+            type: string
+          required: true
+          description: The ID of the doctor
+      responses:
+        '200':
+          description: OK
+
+  /messages:
+    post:
+      summary: Create a new message
+      tags:
+        - "Message Chat"
+      operationId: famapi.blueprints.messaging.message.create_message
+      security:
+        - jwt_auth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message_content:
+                  type: string
+                  description: The content of the message
+              required:
+                - message_content
+      responses:
+        '200':
+          description: Message created successfully
+    get:
+      summary: Get all messages
+      tags:
+        - "Message Chat"
+      operationId: famapi.blueprints.messaging.message.get_all_messages
+      security:
+        - jwt_auth: [ ]
+      responses:
+        '200':
+          description: List of messages
+  /messages/user:
+    get:
+      summary: Get messages of the logged-in user
+      tags:
+        - "Message Chat"
+      operationId: famapi.blueprints.messaging.message.get_user_messages
+      security:
+        - jwt_auth: [ ]
+      responses:
+        '200':
+          description: List of messages of the logged-in user
+  /messages/{message_id}:
+    get:
+      summary: Get a message by ID
+      tags:
+        - "Message Chat"
+      operationId: famapi.blueprints.messaging.message.get_message_by_id
+      security:
+        - jwt_auth: [ ]
+      parameters:
+        - in: path
+          name: message_id
+          description: ID of the message to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete a message by ID
+      tags:
+        - "Message Chat"
+      operationId: famapi.blueprints.messaging.message.delete_message_by_id
+      security:
+        - jwt_auth: [ ]
+      parameters:
+        - in: path
+          name: message_id
+          description: ID of the message to delete
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+
+
+  /appointments:
+    post:
+      summary: Create a new appointment
+      tags:
+        - Appointments
+      operationId: famapi.blueprints.appointment.bookings.create_appointment
+      security:
+        - jwt_auth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_id:
+                  type: integer
+                  description: The ID of the patient
+                doctor_id:
+                  type: integer
+                  description: The ID of the doctor
+                appointment_date:
+                  type: string
+                  format: date
+                  description: The date of the appointment (YYYY-MM-DD)
+                appointment_time:
+                  type: string
+                  format: time
+                  description: The time of the appointment (HH:MM)
+              required:
+                - patient_id
+                - doctor_id
+                - appointment_date
+      responses:
+        '200':
+          description: OK
+    get:
+      summary: Get all appointments
+      tags:
+        - Appointments
+      operationId: famapi.blueprints.appointment.bookings.get_all_appointments
+      security:
+        - jwt_auth: [ ]
+      responses:
+        '200':
+          description: List of all appointments
+  /appointments/expired:
+    delete:
+      summary: Delete past appointments
+      tags:
+        - Appointments
+      operationId: famapi.blueprints.appointment.bookings.delete_past_appointments
+      security:
+        - jwt_auth: [ ]
+      responses:
+        '200':
+          description: Past appointments deleted successfully
+  /appointments/doctor:
+    get:
+      summary: Get all appointments for a doctor
+      tags:
+        - Appointments
+      operationId: famapi.blueprints.appointment.bookings.get_dr_appointments
+      security:
+        - jwt_auth: [ ]
+      parameters:
+        - in: query
+          name: doctor_id
+          schema:
+            type: integer
+            description: The ID of the doctor
+          required: true
+      responses:
+        '200':
+          description: OK
+  /appointments/patient:
+    get:
+      summary: Get appointments for a patient
+      description: Get all appointments for a patient by patient ID
+      tags:
+        - Appointments
+      operationId: famapi.blueprints.appointment.bookings.get_patient_appointments
+      security:
+        - jwt_auth: [ ]
+      parameters:
+        - name: patient_id
+          in: query
+          description: ID of the patient to retrieve appointments for
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+
+
+
